@@ -24,6 +24,8 @@ Order = namedtuple('Order', 'action, instrument, amount')
 
 ##############
 
+ZERO = Decimal(0)
+
 class Portfolio:
 
     def __init__(self, positions):
@@ -37,14 +39,15 @@ class Portfolio:
             res[instrument] += value / self.total * 100
         return res
 
-    def is_balanced(self, model_portfolio, threshold=Decimal(0)):
+    def is_balanced(self, model_portfolio, threshold=ZERO):
         for _, value_offset, target_value in self.__diff(model_portfolio):
             # check that the difference to the target_value is beyond the threshold
             if abs(value_offset) / target_value > threshold / 100:
                 return False
         return True
 
-    def rebalance(self, model_portfolio):
+    def rebalance(self, model_portfolio, threshold=ZERO):
+        if self.is_balanced(model_portfolio, threshold): return []
         orders = []
         for instrument, value_offset, _ in self.__diff(model_portfolio):
             if instrument != CASH:
@@ -60,7 +63,7 @@ class Portfolio:
             alloc_offset = target_alloc - curr_alloc
             value_offset = self.total * alloc_offset / 100
             if value_offset != 0:
-                value = self.positions.get(instrument, Decimal(0))
+                value = self.positions.get(instrument, ZERO)
                 target_value = value + value_offset
                 # the instrument is off by value_offset to its target_value
                 res.append((instrument, value_offset, target_value))
@@ -74,7 +77,7 @@ class Portfolio:
         res = dict(model_portfolio.allocations)
         for instrument in self.positions.keys():
             if instrument not in res:
-                res[instrument] = Decimal(0)
+                res[instrument] = ZERO
         return res
 
 ##############
