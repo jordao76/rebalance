@@ -23,7 +23,7 @@ class PortfolioBasicTest(unittest.TestCase):
         self.assertEqual(
             self.portfolio.allocations, {CASH: Decimal(80), AAA: Decimal(20)})
 
-class RebalanceTest(unittest.TestCase):
+class PortfolioRebalanceTest(unittest.TestCase):
 
     def setUp(self):
         self.model_portfolio = Portfolio({
@@ -46,7 +46,7 @@ class RebalanceTest(unittest.TestCase):
         orders = portfolio.rebalance(self.model_portfolio)
         self.assertEqual(orders, [])
 
-    def test_rebalance_imbalanced(self):
+    def test_rebalance_unbalanced(self):
         portfolio = Portfolio({
             AAA: Decimal(2000),
             BBB: Decimal(8000)})
@@ -65,6 +65,40 @@ class RebalanceTest(unittest.TestCase):
             (SELL, DDD, Decimal(8000)),
             (BUY, AAA, Decimal(4000)),
             (BUY, BBB, Decimal(5000))])
+
+class PortfolioIsBalancedTest(unittest.TestCase):
+
+    def setUp(self):
+        self.model_portfolio = Portfolio({
+            AAA: Decimal(10),
+            BBB: Decimal(90)})
+
+    def make_portfolio(self, aaa, bbb):
+        return Portfolio({
+            AAA: Decimal(aaa),
+            BBB: Decimal(bbb)})
+
+    def test_balanced(self):
+        portfolio = self.make_portfolio(1000, 9000)
+        balanced = portfolio.is_balanced(self.model_portfolio)
+        self.assertTrue(balanced)
+
+    def test_unbalanced(self):
+        portfolio = self.make_portfolio('999.99', '9000.01')
+        balanced = portfolio.is_balanced(self.model_portfolio)
+        self.assertFalse(balanced)
+
+    def test_within_threshold(self):
+        portfolio = self.make_portfolio(900, 9100)
+        balanced = portfolio.is_balanced(
+            self.model_portfolio, threshold=Decimal(10))
+        self.assertTrue(balanced)
+
+    def test_beyond_threshold(self):
+        portfolio = self.make_portfolio(900, 9100)
+        balanced = portfolio.is_balanced(
+            self.model_portfolio, threshold=Decimal(9))
+        self.assertFalse(balanced)
 
 if __name__ == '__main__':
     unittest.main()

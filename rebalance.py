@@ -37,18 +37,34 @@ class Portfolio:
             res[instrument] += value / self.total * 100
         return res
 
+    def is_balanced(self, model_portfolio, threshold=Decimal(0)):
+        for _, value_offset, target_value in self.__diff(model_portfolio):
+            # check that the difference to the target_value is beyond the threshold
+            if abs(value_offset) / target_value > threshold / 100:
+                return False
+        return True
+
     def rebalance(self, model_portfolio):
-        target_allocations = self.__resolve_target_allocations(model_portfolio)
         orders = []
-        for instrument, target_alloc in target_allocations.items():
-            alloc = self.allocations[instrument]
-            alloc_offset = target_alloc - alloc
-            value_offset = self.total * alloc_offset / 100
-            if instrument != CASH and value_offset != 0:
+        for instrument, value_offset, _ in self.__diff(model_portfolio):
+            if instrument != CASH:
                 action = (BUY if value_offset > 0 else SELL)
                 orders.append(Order(action, instrument, abs(value_offset)))
-        orders.sort()
-        return orders
+        return sorted(orders)
+
+    def __diff(self, model_portfolio):
+        target_allocations = self.__resolve_target_allocations(model_portfolio)
+        res = []
+        for instrument, target_alloc in target_allocations.items():
+            curr_alloc = self.allocations[instrument]
+            alloc_offset = target_alloc - curr_alloc
+            value_offset = self.total * alloc_offset / 100
+            if value_offset != 0:
+                value = self.positions.get(instrument, Decimal(0))
+                target_value = value + value_offset
+                # the instrument is off by value_offset to its target_value
+                res.append((instrument, value_offset, target_value))
+        return res
 
     def __resolve_target_allocations(self, model_portfolio):
         # so that all relevant instruments are covered,

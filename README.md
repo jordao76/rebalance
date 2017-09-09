@@ -14,7 +14,7 @@ VCN = Instrument('VCN', 'Vanguard FTSE Canada All Cap Index ETF')
 XAW = Instrument('XAW', 'iShares Core MSCI All Country World ex Canada Index ETF')
 
 my_portfolio = Portfolio({
-    CASH : Decimal(500),
+    CASH: Decimal(500),
     ZAG: Decimal(1000),
     VCN: Decimal(3000),
     XAW: Decimal(5500)})
@@ -34,4 +34,4 @@ print(orders)
 # Order(action=Buy, instrument=ZAG, amount=Decimal('1500.00'))]
 ```
 
-The result are the necessary orders to rebalance `my_portfolio` with the `model_portfolio` as a model, where an order includes the desired action (Buy or Sell), the instrument (ETF) symbol and the dollar amount (with maximum precision, discrepancies may occur).
+The results are the necessary orders to rebalance `my_portfolio` with the `model_portfolio` as a model, where an order includes the desired action (Buy or Sell), the instrument (ETF) symbol and the dollar amount (with default precision and rounding rules, discrepancies may occur).
