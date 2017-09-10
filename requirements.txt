@@ -1,2 +1,2 @@
 matplotlib==2.0.2
-numpy==1.12.1
+numpy==1.12.1 # numpy 1.13.1 didn't work on Windows

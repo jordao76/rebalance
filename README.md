@@ -1,8 +1,18 @@
-# Simple Portfolio Rebalancing
+# rebalance
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/jordao76/rebalance/blob/master/LICENSE.md)
 
-Simple python code to aid in Exchange-Traded Funds (ETFs) portfolio rebalancing.
+Python code to aid in Exchange-Traded Funds (ETFs) portfolio rebalancing.
+
+To install: `git clone`, `cd` into it and run:
+
+```sh
+$ pip install -r requirements.txt
+...
+$ python setup.py install
+```
+
+Use it like this:
 
 ```python
 from decimal import *
