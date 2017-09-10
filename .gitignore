@@ -1,3 +1,6 @@
-__pycache__
-build
-dist
+__pycache__/
+build/
+dist/
+eggs/
+*.egg-info/
+MANIFEST
