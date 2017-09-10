@@ -1,6 +1,6 @@
 import unittest
-from rebalance import *
-from decimal import *
+from rebalance import Instrument, CASH, Portfolio, BUY, SELL
+from decimal import Decimal
 
 AAA = Instrument('AAA', 'AAA Index ETF')
 BBB = Instrument('BBB', 'BBB Index ETF')
@@ -99,6 +99,3 @@ class PortfolioIsBalancedTest(unittest.TestCase):
         balanced = portfolio.is_balanced(
             self.model_portfolio, threshold=Decimal(9))
         self.assertFalse(balanced)
-
-if __name__ == '__main__':
-    unittest.main()

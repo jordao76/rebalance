@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='rebalance',
@@ -9,9 +9,10 @@ setup(
     url='https://github.com/jordao76/rebalance',
     license='MIT',
     install_requires=['matplotlib'],
-    test_suite='test_rebalance',
-    py_modules=['rebalance'],
+    test_suite='tests',
+    packages = find_packages(),
     classifiers=[
         'Development Status :: 3 - Alpha',
+        'Intended Audience :: Financial and Insurance Industry',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3'])
+        'Programming Language :: Python :: 3.6'])
