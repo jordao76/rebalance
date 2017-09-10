@@ -1,10 +1,11 @@
 # rebalance
 
+[![Build Status](https://travis-ci.org/jordao76/rebalance.svg)](https://travis-ci.org/jordao76/rebalance)
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/jordao76/rebalance/blob/master/LICENSE.md)
 
 Python code to aid in Exchange-Traded Funds (ETFs) portfolio rebalancing.
 
-To install: `git clone`, `cd` into it and run:
+To install: with python 3, `git clone`, `cd` into it and run:
 
 ```sh
 $ pip install -r requirements.txt
