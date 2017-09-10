@@ -75,17 +75,17 @@ class Portfolio:
                 res[instrument] = ZERO
         return res
 
-    def plot(self):
+    def plot(self, plt=plt):
         symbols = list(self.positions.keys())
         values = list(self.positions.values())
         index = 0
-        def get_label(pct):
+        def get_text(pct):
             nonlocal values, index
             value = values[index]
             index += 1
             return '${:,.2f} ({:.2f}%)'.format(value, pct)
         fig, ax = plt.subplots()
-        ax.pie(values, labels=symbols, autopct=get_label)
+        ax.pie(values, labels=symbols, autopct=get_text)
         ax.axis('equal')
 
 ##############

@@ -2,10 +2,14 @@ import unittest
 from rebalance import Instrument, CASH, Portfolio, BUY, SELL
 from decimal import Decimal
 
+##############
+
 AAA = Instrument('AAA', 'AAA Index ETF')
 BBB = Instrument('BBB', 'BBB Index ETF')
 CCC = Instrument('CCC', 'CCC Index ETF')
 DDD = Instrument('DDD', 'DDD Index ETF')
+
+##############
 
 class PortfolioBasicTest(unittest.TestCase):
 
@@ -22,6 +26,8 @@ class PortfolioBasicTest(unittest.TestCase):
     def test_portfolio_allocations(self):
         self.assertEqual(
             self.portfolio.allocations, {CASH: Decimal(80), AAA: Decimal(20)})
+
+##############
 
 class PortfolioRebalanceTest(unittest.TestCase):
 
@@ -66,6 +72,8 @@ class PortfolioRebalanceTest(unittest.TestCase):
             (BUY, AAA, Decimal(4000)),
             (BUY, BBB, Decimal(5000))])
 
+##############
+
 class PortfolioIsBalancedTest(unittest.TestCase):
 
     def setUp(self):
@@ -99,3 +107,36 @@ class PortfolioIsBalancedTest(unittest.TestCase):
         balanced = portfolio.is_balanced(
             self.model_portfolio, threshold=Decimal(9))
         self.assertFalse(balanced)
+
+##############
+
+from unittest.mock import MagicMock
+
+class PortfolioPlotTest(unittest.TestCase):
+
+    def setUp(self):
+        self.portfolio = Portfolio({
+            CASH: Decimal(129),
+            AAA: Decimal(4034)})
+
+    def test_plot(self):
+        # mock matplotlib.pyplot pie chart
+        fig, ax, plt = [MagicMock() for _ in range(3)]
+        plt.subplots.return_value = (fig, ax)
+        self.portfolio.plot(plt)
+
+        # check arguments to ax.pie(...)
+        args = ax.pie.call_args
+        values = args[0][0]
+        labels = args[1]['labels']
+
+        pos, allocs = self.portfolio.positions, self.portfolio.allocations
+        self.assertEqual(values, [pos[CASH], pos[AAA]])
+        self.assertEqual(labels, [CASH, AAA])
+
+        # call autopct function for the pie wedge texts
+        autopct = args[1]['autopct']
+        text1 = autopct(allocs[CASH])
+        text2 = autopct(allocs[AAA])
+        self.assertEqual(text1, '$129.00 (3.10%)')
+        self.assertEqual(text2, '$4,034.00 (96.90%)')
