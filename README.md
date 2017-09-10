@@ -35,3 +35,14 @@ print(orders)
 ```
 
 The results are the necessary orders to rebalance `my_portfolio` with the `model_portfolio` as a model, where an order includes the desired action (Buy or Sell), the instrument (ETF) symbol and the dollar amount (with default precision and rounding rules, discrepancies may occur).
+
+There's also a method to plot your portfolio:
+
+```python
+import matplotlib.pyplot as plt
+
+my_portfolio.plot()
+plt.show()
+```
+
+![My Portfolio](my_portfolio.png)
