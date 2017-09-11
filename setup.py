@@ -8,7 +8,7 @@ setup(
     author_email='rodrigo.jordao@gmail.com',
     url='https://github.com/jordao76/rebalance',
     license='MIT',
-    install_requires=['matplotlib'],
+    install_requires=['matplotlib','requests'],
     test_suite='tests',
     packages = find_packages(),
     classifiers=[

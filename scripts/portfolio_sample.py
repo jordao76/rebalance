@@ -33,4 +33,5 @@ assert orders == [
 
 # plotting
 my_portfolio.plot()
+
 plt.show()

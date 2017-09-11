@@ -57,3 +57,12 @@ plt.show()
 ```
 
 ![My Portfolio](my_portfolio.png)
+
+You can also plot the prices of a security. This will use google finance and plot the daily closing prices of TSE:ZAG for a year until today:
+
+```python
+ZAG.plot_prices()
+plt.show()
+```
+
+![ZAG](ZAG.png)
