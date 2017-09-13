@@ -58,7 +58,7 @@ plt.show()
 
 ![My Portfolio](my_portfolio.png)
 
-You can also plot the prices of a security. This will use google finance and plot the daily closing prices of TSE:ZAG for a year until today:
+You can also plot the prices or returns of a security. This will use google finance and plot the daily closing prices of TSE:ZAG for a year until today:
 
 ```python
 ZAG.plot_prices()
@@ -66,3 +66,10 @@ plt.show()
 ```
 
 ![ZAG](ZAG.png)
+
+Returns are plotted for a year until today by providing an initial investment. Note that fractional shares are used and there's no information on dividend payouts.
+
+```python
+ZAG.plot_returns(50000)
+plt.show()
+```

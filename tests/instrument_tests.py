@@ -44,10 +44,9 @@ class InstrumentTest(unittest.TestCase):
         dates, prices = CASH.get_prices()
         self.assertEqual(len(dates), 365)
         self.assertEqual(len(prices), len(dates))
-        exp_dates = [date.today() - timedelta(days=d) for d in reversed(range(365))]
-        self.assertEqual(dates, exp_dates)
-        exp_prices = [1 for _ in range(365)]
-        self.assertEqual(prices, exp_prices)
+        exp_dates = [[date.today() - timedelta(days=d)] for d in reversed(range(365))]
+        self.assertTrue((dates == exp_dates).all())
+        self.assertTrue((prices == 1).all())
 
     def test_plot_prices(self):
         fig, ax, plt = [MagicMock() for _ in range(3)]
@@ -58,6 +57,22 @@ class InstrumentTest(unittest.TestCase):
         prices = args[0][1]
         self.assertEqual(len(dates), 248)
         self.assertEqual(len(prices), len(dates))
+
+    def test_get_returns(self):
+        investment = Decimal(50000)
+        dates, returns = VFV.get_returns(investment)
+        self.assertEqual(len(dates), 248)
+        self.assertEqual(len(returns), len(dates))
+        shares = investment / Decimal('50.21')
+        self.assertEqual(returns[0][0], Decimal(50000))
+        self.assertEqual(returns[-1][0], shares * Decimal('53.26'))
+
+    def test_get_returns_cash(self):
+        dates, returns = CASH.get_returns(50000)
+        self.assertEqual(len(returns), len(dates))
+        exp_dates = [[date.today() - timedelta(days=d)] for d in reversed(range(365))]
+        self.assertTrue((dates == exp_dates).all())
+        self.assertTrue((returns == 50000).all())
 
 ##############
 
@@ -83,8 +98,8 @@ class GoogleFinanceClientTest(unittest.TestCase):
         gfc = GoogleFinanceClient()
         dates, prices = gfc.parse_prices(lines)
         self.assertEqual(len(dates), 248)
-        self.assertEqual(dates[0], date(2016, 9, 12))
-        self.assertEqual(dates[-1], date(2017, 9, 8))
+        self.assertEqual(dates[0][0], date(2016, 9, 12))
+        self.assertEqual(dates[-1][0], date(2017, 9, 8))
         self.assertEqual(len(prices), len(dates))
         self.assertEqual(prices[0][0], Decimal('50.21'))
         self.assertEqual(prices[-1][0], Decimal('53.26'))
