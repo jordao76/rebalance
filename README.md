@@ -17,7 +17,7 @@ Use it like this:
 
 ```python
 from decimal import *
-from rebalance import Instrument, CASH, Portfolio
+from rebalance import Instrument, CASH, Portfolio, Plotter
 
 # instruments (ETFs)
 ZAG = Instrument('ZAG', 'BMO Aggregate Bond Index EFT')
