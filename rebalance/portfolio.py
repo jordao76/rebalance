@@ -1,6 +1,8 @@
 from collections import namedtuple, defaultdict
 from decimal import Decimal
 from rebalance.instrument import Instrument, CASH
+from rebalance.plotting import Plotter
+from rebalance.utils import fill_price_gaps
 import matplotlib.pyplot as plt
 
 ##############
@@ -87,5 +89,32 @@ class Portfolio:
         fig, ax = plt.subplots()
         ax.pie(values, labels=symbols, autopct=get_text)
         ax.axis('equal')
+
+    def get_returns(self):
+        dates, returns = [], ZERO
+        for instrument, value in self.positions.items():
+            if instrument == CASH: continue
+            curr_dates, prices = fill_price_gaps(*instrument.get_returns(value))
+            if len(dates) == 0:
+                dates = curr_dates
+            else:
+                assert(len(dates) == len(curr_dates))
+                assert((dates == curr_dates).all())
+            returns += prices
+        return self.__plus_cash(dates, returns)
+
+    def __plus_cash(self, dates, returns):
+        cash_amount = self.positions.get(CASH, ZERO)
+        if len(dates) == 0:
+            dates, returns = CASH.get_returns(cash_amount)
+        else:
+            returns += cash_amount
+        return dates, returns
+
+    def plot_returns(self, plotter=None):
+        dates, returns = self.get_returns()
+        if plotter == None: plotter = Plotter()
+        plotter.plot_prices(dates, returns, label='Total')
+        return plotter
 
 ##############

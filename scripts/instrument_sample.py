@@ -1,10 +1,9 @@
 import sys
 sys.path.append('../rebalance')
-sys.path.append('../tests')
 
-import matplotlib.pyplot as plt
 from rebalance import *
-from tests.instrument_tests import FixedPriceService, check_connection
+from tests.googlefinance_tests import check_connection
+from tests.stubs import FixedPriceService
 
 if not check_connection():
     Instrument.price_service = FixedPriceService()
@@ -15,5 +14,4 @@ VFV = Instrument('VFV', 'Vanguard S&P 500 Index ETF')
 # plotting
 VFV.plot_prices()
 VFV.plot_returns(Decimal(1000))
-
-plt.show()
+Plotter.show()

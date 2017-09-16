@@ -10,7 +10,7 @@ setup(
     license='MIT',
     install_requires=['matplotlib','requests'],
     test_suite='tests',
-    packages = find_packages(),
+    packages=find_packages(),
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Financial and Insurance Industry',

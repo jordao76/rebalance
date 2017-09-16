@@ -1,13 +1,20 @@
-import unittest
-from rebalance import Instrument, CASH, Portfolio, BUY, SELL
 from decimal import Decimal
+from datetime import date
+import numpy as np
+import unittest
+from unittest.mock import MagicMock
+from rebalance import Instrument, CASH, Portfolio, BUY, SELL
+from tests.stubs import FixedPriceService
 
 ##############
+
+Instrument.price_service = FixedPriceService()
 
 AAA = Instrument('AAA', 'AAA Index ETF')
 BBB = Instrument('BBB', 'BBB Index ETF')
 CCC = Instrument('CCC', 'CCC Index ETF')
 DDD = Instrument('DDD', 'DDD Index ETF')
+VFV = Instrument('VFV', 'Vanguard S&P 500 Index ETF')
 
 ##############
 
@@ -110,9 +117,57 @@ class PortfolioIsBalancedTest(unittest.TestCase):
 
 ##############
 
-from unittest.mock import MagicMock
+class FixedPricesInstrument:
+    def __init__(self, symbol, dates, prices):
+        self.symbol = symbol
+        self.dates, self.prices = dates, prices
+    def get_returns(self, investment):
+        return Instrument.get_returns(self, investment)
+    def get_prices(self):
+        return self.dates, self.prices
 
-class PortfolioPlotTest(unittest.TestCase):
+class PortfolioReturnsTest(unittest.TestCase):
+
+    def test_get_returns(self):
+        portfolio = Portfolio({
+            CASH: Decimal(1000),
+            VFV: Decimal(1000)})
+        act_dates, act_returns = portfolio.get_returns()
+        self.assertEqual(len(act_dates), 365)
+        self.assertEqual(len(act_returns), len(act_dates))
+        shares = Decimal(1000) / Decimal('28.89')
+        self.assertEqual(act_returns[0][0], 2000) # starting CASH + VFV
+        self.assertEqual(act_returns[-1][0], shares * Decimal('30.69') + 1000)
+
+    def test_get_returns_cash_only(self):
+        portfolio = Portfolio({CASH: Decimal(1000)})
+        act_dates, act_returns = portfolio.get_returns()
+        self.assertEqual(len(act_dates), 365)
+        self.assertEqual(len(act_returns), len(act_dates))
+        self.assertEqual(act_returns[0][0], 1000)
+        self.assertEqual(act_returns[-1][0], 1000)
+
+    # portfolios with assets that give back returns
+    # where the dates don't match completely,
+    # both in number of elements and in contents
+
+    @unittest.skip('wip')
+    def test_get_returns_mismatched_dates(self):
+        aaa_dates = np.array([[date(2016,1,1)],[date(2016,1,2)],[date(2016,1,3)]])
+        aaa_prices = np.array([[42],[43],[44]])
+        bbb_dates = np.array([[date(2016,1,2)],[date(2016,1,3)]])
+        bbb_prices = np.array([[57],[58]])
+        AAA = FixedPricesInstrument('AAA', aaa_dates, aaa_prices)
+        BBB = FixedPricesInstrument('BBB', bbb_dates, bbb_prices)
+        portfolio = Portfolio({
+            AAA: Decimal(1000),
+            BBB: Decimal(1000)})
+        act_dates, act_returns = portfolio.get_returns()
+        # TODO decide what should happen in this case
+
+##############
+
+class PortfolioPlottingTest(unittest.TestCase):
 
     def setUp(self):
         self.portfolio = Portfolio({
@@ -140,3 +195,5 @@ class PortfolioPlotTest(unittest.TestCase):
         text2 = autopct(allocs[AAA])
         self.assertEqual(text1, '$129.00 (3.10%)')
         self.assertEqual(text2, '$4,034.00 (96.90%)')
+
+##############

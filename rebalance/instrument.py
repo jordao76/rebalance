@@ -1,10 +1,9 @@
 from collections import namedtuple
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.dates import MonthLocator, DateFormatter
-from matplotlib.ticker import StrMethodFormatter
-from datetime import date, timedelta
+from datetime import date
 from decimal import Decimal
+from rebalance.plotting import Plotter
+from rebalance.utils import dates_till_target
 
 ##############
 
@@ -32,24 +31,18 @@ class Instrument(namedtuple('Instrument', 'symbol, name, exchange')):
         returns = prices * shares
         return dates, returns
 
-    def plot_prices(self, plt=plt):
+    def plot_prices(self, plotter=None):
         dates, prices = self.get_prices()
-        self.__plot(dates, prices, plt)
+        return self.__plot(dates, prices, plotter)
 
-    def plot_returns(self, investment, plt=plt):
+    def plot_returns(self, investment, plotter=None):
         dates, returns = self.get_returns(investment)
-        self.__plot(dates, returns, plt)
+        return self.__plot(dates, returns, plotter)
 
-    def __plot(self, dates, prices, plt):
-        fig, ax = plt.subplots()
-        fig.autofmt_xdate()
-        ax.set_title(self.symbol)
-        ax.plot_date(dates, prices, '-')
-        ax.yaxis.set_major_formatter(StrMethodFormatter('${x:,.2f}'))
-        ax.xaxis.set_major_locator(MonthLocator())
-        ax.xaxis.set_major_formatter(DateFormatter("%b-%Y"))
-        ax.autoscale_view()
-        ax.grid(True)
+    def __plot(self, dates, prices, plotter):
+        if plotter == None: plotter = Plotter()
+        plotter.plot_prices(dates, prices, label=self.symbol, title=self.symbol)
+        return plotter
 
 Instrument.__new__.__defaults__ = ('', 'TSE')
 
@@ -59,10 +52,8 @@ class Cash(Instrument):
     __slots__ = ()
     def get_prices(self):
         # daily prices for a year
-        DAYS = 365
-        factors = np.arange(DAYS-1,-1,step=-1).reshape(DAYS,1)
-        dates = date.today() - factors * timedelta(days=1)
-        prices = np.full((DAYS,1), Decimal(1))
+        dates = dates_till_target(days=365, target=date.today())
+        prices = np.full((365,1), Decimal(1))
         return dates, prices
 CASH = Cash('CASH', 'Cash', None)
 

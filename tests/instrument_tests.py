@@ -1,33 +1,19 @@
-import unittest
-from unittest.mock import MagicMock
-from rebalance import Instrument, CASH, GoogleFinanceClient
 from decimal import Decimal
 from datetime import date, timedelta
-import requests
+import unittest
+from unittest.mock import MagicMock
+from rebalance import Instrument, CASH, Plotter
+from tests.stubs import FixedPriceService
 
 ##############
+
+Instrument.price_service = FixedPriceService()
 
 VFV = Instrument('VFV', 'Vanguard S&P 500 Index ETF')
 
 ##############
 
-SAMPLE_GOOGLE_FINANCE_FILE_NAME = 'tests/VFV-sample.txt'
-
-class FixedPriceService(GoogleFinanceClient):
-    def get_prices(self, instrument, exchange):
-        with open(SAMPLE_GOOGLE_FINANCE_FILE_NAME) as f:
-            lines = [line.strip() for line in f]
-        return self.parse_prices(lines)
-
-##############
-
 class InstrumentTest(unittest.TestCase):
-
-    def setUp(self):
-        Instrument.price_service = FixedPriceService()
-
-    def tearDown(self):
-        Instrument.price_service = GoogleFinanceClient()
 
     def test_instrument_defaults(self):
         AAA = Instrument('AAA')
@@ -36,9 +22,43 @@ class InstrumentTest(unittest.TestCase):
         self.assertEqual(AAA.exchange, 'TSE')
 
     def test_get_prices(self):
-        dates, prices = VFV.get_prices()
-        self.assertEqual(len(dates), 248)
-        self.assertEqual(len(prices), len(dates))
+        act_dates, act_prices = VFV.get_prices()
+        self.assertEqual(len(act_dates), 251)
+        self.assertEqual(act_dates[0][0], date(2016, 9, 13))
+        self.assertEqual(act_dates[-1][0], date(2017, 9, 12))
+        self.assertEqual(len(act_prices), len(act_dates))
+        self.assertEqual(act_prices[0][0], Decimal('28.89'))
+        self.assertEqual(act_prices[-1][0], Decimal('30.69'))
+
+    def test_plot_prices(self):
+        plotter = MagicMock()
+        VFV.plot_prices(plotter)
+        args = plotter.plot_prices.call_args
+        act_dates = args[0][0]
+        act_prices = args[0][1]
+        exp_dates, exp_prices = VFV.get_prices()
+        self.assertTrue((act_dates == exp_dates).all())
+        self.assertTrue((act_prices == exp_prices).all())
+
+    def test_get_returns(self):
+        investment = Decimal(50000)
+        act_dates, act_returns = VFV.get_returns(investment)
+        self.assertEqual(len(act_dates), 251)
+        self.assertEqual(len(act_returns), len(act_dates))
+        shares = investment / Decimal('28.89')
+        self.assertEqual(act_returns[0][0], investment)
+        self.assertEqual(act_returns[-1][0], shares * Decimal('30.69'))
+
+    def test_plot_returns(self):
+        investment = Decimal('12345.34')
+        plotter = MagicMock()
+        VFV.plot_returns(investment, plotter)
+        args = plotter.plot_prices.call_args
+        act_dates = args[0][0]
+        act_returns = args[0][1]
+        exp_dates, exp_returns = VFV.get_returns(investment)
+        self.assertTrue((act_dates == exp_dates).all())
+        self.assertTrue((act_returns == exp_returns).all())
 
     def test_get_prices_cash(self):
         dates, prices = CASH.get_prices()
@@ -48,60 +68,11 @@ class InstrumentTest(unittest.TestCase):
         self.assertTrue((dates == exp_dates).all())
         self.assertTrue((prices == 1).all())
 
-    def test_plot_prices(self):
-        fig, ax, plt = [MagicMock() for _ in range(3)]
-        plt.subplots.return_value = (fig, ax)
-        VFV.plot_prices(plt)
-        args = ax.plot_date.call_args
-        dates = args[0][0]
-        prices = args[0][1]
-        self.assertEqual(len(dates), 248)
-        self.assertEqual(len(prices), len(dates))
-
-    def test_get_returns(self):
-        investment = Decimal(50000)
-        dates, returns = VFV.get_returns(investment)
-        self.assertEqual(len(dates), 248)
-        self.assertEqual(len(returns), len(dates))
-        shares = investment / Decimal('50.21')
-        self.assertEqual(returns[0][0], Decimal(50000))
-        self.assertEqual(returns[-1][0], shares * Decimal('53.26'))
-
     def test_get_returns_cash(self):
         dates, returns = CASH.get_returns(50000)
         self.assertEqual(len(returns), len(dates))
         exp_dates = [[date.today() - timedelta(days=d)] for d in reversed(range(365))]
         self.assertTrue((dates == exp_dates).all())
         self.assertTrue((returns == 50000).all())
-
-##############
-
-def check_connection(url='https://www.google.com', timeout_in_seconds=5):
-    try:
-        requests.head(url, timeout=timeout_in_seconds)
-        return True
-    except requests.ConnectionError:
-        return False
-
-class GoogleFinanceClientTest(unittest.TestCase):
-
-    @unittest.skipIf(not check_connection(), 'no connection')
-    def test_get_from_google_finance(self):
-        gfc = GoogleFinanceClient()
-        dates, prices = gfc.get_prices(VFV)
-        self.assertTrue(len(dates) > 100)
-        self.assertEqual(len(prices), len(dates))
-
-    def test_parse_google_finance_result(self):
-        with open(SAMPLE_GOOGLE_FINANCE_FILE_NAME) as f:
-            lines = [line.strip() for line in f]
-        gfc = GoogleFinanceClient()
-        dates, prices = gfc.parse_prices(lines)
-        self.assertEqual(len(dates), 248)
-        self.assertEqual(dates[0][0], date(2016, 9, 12))
-        self.assertEqual(dates[-1][0], date(2017, 9, 8))
-        self.assertEqual(len(prices), len(dates))
-        self.assertEqual(prices[0][0], Decimal('50.21'))
-        self.assertEqual(prices[-1][0], Decimal('53.26'))
 
 ##############

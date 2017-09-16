@@ -50,26 +50,19 @@ The results are the necessary orders to rebalance `my_portfolio` with the `model
 There's also a method to plot your portfolio:
 
 ```python
-import matplotlib.pyplot as plt
-
 my_portfolio.plot()
-plt.show()
+Plotter.show()
 ```
 
 ![My Portfolio](my_portfolio.png)
 
-You can also plot the prices or returns of a security. This will use google finance and plot the daily closing prices of TSE:ZAG for a year until today:
+You can also plot the returns of your portfolio. This will use google finance and plot the daily value of the portfolio for a year until today, assuming the portfolio debuted one year ago with its recorded composition:
 
 ```python
-ZAG.plot_prices()
-plt.show()
+my_portfolio.plot_returns()
+Plotter.show()
 ```
 
-![ZAG](ZAG.png)
+![My Portfolio Returns](my_portfolio_returns.png)
 
-Returns are plotted for a year until today by providing an initial investment. Note that fractional shares are used and there's no information on dividend payouts.
-
-```python
-ZAG.plot_returns(50000)
-plt.show()
-```
+Note that this is for illustrative purposes only and does not account for fees or dividends. Also remember, past performance does not guarantee future results.
