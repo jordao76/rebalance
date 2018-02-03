@@ -15,6 +15,7 @@ def check_connection(url='https://www.google.com', timeout_in_seconds=5):
 
 class GoogleFinanceClientTest(unittest.TestCase):
 
+    @unittest.skip('Google finance does not work for automated calls anymore')
     @unittest.skipIf(not check_connection(), 'no connection')
     def test_get_from_google_finance(self):
         gfc = GoogleFinanceClient()
